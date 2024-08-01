@@ -3,14 +3,14 @@
     "step": {
       "user": {
         "data": {
-          "api_url": "API URL",
-          "device_id": "Device ID"
+          "api_url": "GET API URL",
+          "device_id": "POST API URL"
         }
       },
       "init": {
         "data": {
-          "api_url": "API URL",
-          "device_id": "Device ID"
+          "api_url": "GET API URL",
+          "device_id": "POST API URL"
         }
       }
     }
