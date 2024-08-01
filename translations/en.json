@@ -1,0 +1,11 @@
+{
+  "title": "Hisense Climate",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Setup Hisense Climate",
+        "description": "Set up your Hisense Climate integration."
+      }
+    }
+  }
+}
