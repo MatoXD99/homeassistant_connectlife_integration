@@ -2,7 +2,7 @@
   "domain": "hisense_climate",
   "name": "Hisense Climate",
   "version": "1.0.0",
-  "documentation": "https://github.com/matoxd99/homeassistant_connectlife_intergration",
+  "documentation": "https://github.com/matoxd99/homeassistant_connectlife_integration",
   "requirements": [],
   "dependencies": [],
   "codeowners": [
