@@ -33,12 +33,13 @@ async def async_setup_entry(hass, config_entry, async_add_entities, discovery_in
     device_id = config_entry.data.get("device_id")
     update_frequency = config_entry.data.get("update_frequency")
     homeassistant_host = config_entry.data.get("homeassistant_host")
-    climate_entity = ConnectLifeClimate(puid, device_id)
+    port = config_entry.data.get("port")
+    climate_entity = ConnectLifeClimate(puid, device_id, homeassistant_host, port)
     async_add_entities([climate_entity])
     async_track_time_interval(hass, climate_entity.async_update, datetime.timedelta(seconds=update_frequency))
 
 class ConnectLifeClimate(ClimateEntity):
-    def __init__(self, puid, device_id, homeassistant_host):
+    def __init__(self, puid, device_id, homeassistant_host, port):
         self._recently_updated = False
         self._name = "ConnectLife Climate"
         self._temperature = 26.0
@@ -49,6 +50,7 @@ class ConnectLifeClimate(ClimateEntity):
         self._puid = puid
         self._device_id = device_id
         self._homeassistant_host = homeassistant_host
+        self._port = port
         self._attr_hvac_modes = [
             HVAC_MODE_AUTO,
             HVAC_MODE_HEAT,
@@ -148,7 +150,7 @@ class ConnectLifeClimate(ClimateEntity):
         headers = {'Content-Type': 'application/json'}
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post("http://" + self._homeassistant_host + ":8000/api/devices/" + self._device_id, json=data, headers=headers) as response:
+                async with session.post("http://" + self._homeassistant_host + ":" + self._port + "/api/devices/" + self._device_id, json=data, headers=headers) as response:
                     response.raise_for_status()
             except aiohttp.ClientError as e:
                 _LOGGER.error(f"Failed to set HVAC mode: {e}")
@@ -172,7 +174,7 @@ class ConnectLifeClimate(ClimateEntity):
         headers = {'Content-Type': 'application/json'}
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post("http://" + self._homeassistant_host + ":8000/api/devices/" + self._device_id, json=data, headers=headers) as response:
+                async with session.post("http://" + self._homeassistant_host + ":" + self._port + "/api/devices/" + self._device_id, json=data, headers=headers) as response:
                     response.raise_for_status()
             except aiohttp.ClientError as e:
                 _LOGGER.error(f"Failed to set fan mode: {e}")
@@ -192,7 +194,7 @@ class ConnectLifeClimate(ClimateEntity):
         headers = {'Content-Type': 'application/json'}
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post("http://" + self._homeassistant_host + ":8000/api/devices/" + self._device_id, json=data, headers=headers) as response:
+                async with session.post("http://" + self._homeassistant_host + ":" + self._port + "/api/devices/" + self._device_id, json=data, headers=headers) as response:
                     response.raise_for_status()
             except aiohttp.ClientError as e:
                 _LOGGER.error(f"Failed to set swing mode: {e}")
@@ -204,7 +206,7 @@ class ConnectLifeClimate(ClimateEntity):
 
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.get("http://" + self._homeassistant_host + ":8000/api/devices/" + self._puid) as response:
+                async with session.get("http://" + self._homeassistant_host + ":" + self._port + "/api/devices/" + self._puid) as response:
                     response.raise_for_status()
                     data = await response.json()
 

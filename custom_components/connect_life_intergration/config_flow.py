@@ -17,6 +17,7 @@ class ConnectLifeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Required("device_id"): str,
             vol.Required("update_frequency"): vol.Coerce(int),
             vol.Required("homeassistant_host"): str
+            vol.Required("port"): vol.Coerce(int),
         })
 
         return self.async_show_form(step_id="user", data_schema=data_schema, errors=errors)
@@ -42,6 +43,7 @@ class ConnectLifeOptionsFlow(config_entries.OptionsFlow):
             vol.Optional("device_id", default=self.config_entry.data.get("device_id")): str,
             vol.Optional("update_frequency", default=self.config_entry.data.get("update_frequency")): vol.Coerce(int),
             vol.Optional("homeassistant_host", default=self.config_entry.data.get("homeassistant_host")): str,
+            vol.Optional("port"): vol.Coerce(int),
         })
 
         return self.async_show_form(step_id="user", data_schema=data_schema)

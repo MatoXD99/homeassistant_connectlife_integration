@@ -6,7 +6,8 @@
           "puid": "Climate PuID",
           "device_id": "Device ID",
           "update_frequency": "Update frequency (seconds)",
-          "homeassistant_host": "HomeAssistant IP or FQDN"
+          "homeassistant_host": "HomeAssistant IP or FQDN",
+          "port": "Connectlife API proxy port"
         }
       },
       "init": {
@@ -14,7 +15,8 @@
           "puid": "Climate PuID",
           "device_id": "Device ID",
           "update_frequency": "Update frequency (seconds)",
-          "homeassistant_host": "HomeAssistant IP or FQDN"
+          "homeassistant_host": "HomeAssistant IP or FQDN",
+          "port": "Connectlife API proxy port"
         }
       }
     }
