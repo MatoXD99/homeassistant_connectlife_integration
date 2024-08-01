@@ -3,14 +3,18 @@
     "step": {
       "user": {
         "data": {
-          "api_url": "GET API URL",
-          "device_id": "POST API URL"
+          "puid": "GET API URL",
+          "device_id": "POST API URL",
+          "update_frequency": "Update frequency (seconds)",
+          "homeassistant_host": "HomeAssistant IP or FQDN"
         }
       },
       "init": {
         "data": {
-          "api_url": "GET API URL",
-          "device_id": "POST API URL"
+          "puid": "Climate PuID",
+          "device_id": "Device ID",
+          "update_frequency": "Update frequency (seconds)",
+          "homeassistant_host": "HomeAssistant IP or FQDN"
         }
       }
     }

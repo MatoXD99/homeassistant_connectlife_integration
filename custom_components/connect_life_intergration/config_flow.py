@@ -36,8 +36,10 @@ class ConnectLifeOptionsFlow(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         data_schema = vol.Schema({
-            vol.Optional("api_url", default=self.config_entry.data.get("api_url")): str,
+            vol.Optional("puid", default=self.config_entry.data.get("puid")): str,
             vol.Optional("device_id", default=self.config_entry.data.get("device_id")): str,
+            vol.Optional("update_frequency", default=self.config_entry.data.get("update_frequency")): str,
+            vol.Optional("homeassistant_host", default=self.config_entry.data.get("homeassistant_host")): str,
         })
 
         return self.async_show_form(step_id="user", data_schema=data_schema)

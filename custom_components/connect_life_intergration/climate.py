@@ -29,14 +29,16 @@ _LOGGER = logging.getLogger(__name__)
 DOMAIN = "connectlife_homeassistant_integration"
 
 async def async_setup_entry(hass, config_entry, async_add_entities, discovery_info=None):
-    api_url = config_entry.data.get("api_url")
+    puid = config_entry.data.get("puid")
     device_id = config_entry.data.get("device_id")
-    climate_entity = ConnectLifeClimate(api_url, device_id)
+    update_frequency = config_entry.data.get("update_frequency")
+    homeassistant_host = config_entry.data.get("homeassistant_host")
+    climate_entity = ConnectLifeClimate(puid, device_id)
     async_add_entities([climate_entity])
-    async_track_time_interval(hass, climate_entity.async_update, datetime.timedelta(seconds=10))
+    async_track_time_interval(hass, climate_entity.async_update, datetime.timedelta(seconds=update_frequency))
 
 class ConnectLifeClimate(ClimateEntity):
-    def __init__(self, api_url, device_id):
+    def __init__(self, puid, device_id, homeassistant_host):
         self._recently_updated = False
         self._name = "ConnectLife Climate"
         self._temperature = 26.0
@@ -44,8 +46,9 @@ class ConnectLifeClimate(ClimateEntity):
         self._hvac_mode = HVAC_MODE_COOL
         self._fan_mode = "auto"
         self._swing_mode = "off"
-        self._api_url = api_url
+        self._puid = puid
         self._device_id = device_id
+        self._homeassistant_host = homeassistant_host
         self._attr_hvac_modes = [
             HVAC_MODE_AUTO,
             HVAC_MODE_HEAT,
@@ -122,7 +125,7 @@ class ConnectLifeClimate(ClimateEntity):
         data = {"t_temp": temperature}
         headers = {'Content-Type': 'application/json'}
         try:
-            response = requests.post(self._device_id, json=data, headers=headers)
+            response = requests.post("http://" + self._homeassistant_host + ":8000/api/devices/" + self._device_id, json=data, headers=headers)
             response.raise_for_status()
         except requests.RequestException as e:
             _LOGGER.error(f"Failed to set temperature: {e}")
@@ -145,7 +148,7 @@ class ConnectLifeClimate(ClimateEntity):
         headers = {'Content-Type': 'application/json'}
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post(self._device_id, json=data, headers=headers) as response:
+                async with session.post("http://" + self._homeassistant_host + ":8000/api/devices/" + self._device_id, json=data, headers=headers) as response:
                     response.raise_for_status()
             except aiohttp.ClientError as e:
                 _LOGGER.error(f"Failed to set HVAC mode: {e}")
@@ -169,7 +172,7 @@ class ConnectLifeClimate(ClimateEntity):
         headers = {'Content-Type': 'application/json'}
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post(self._device_id, json=data, headers=headers) as response:
+                async with session.post("http://" + self._homeassistant_host + ":8000/api/devices/" + self._device_id, json=data, headers=headers) as response:
                     response.raise_for_status()
             except aiohttp.ClientError as e:
                 _LOGGER.error(f"Failed to set fan mode: {e}")
@@ -189,7 +192,7 @@ class ConnectLifeClimate(ClimateEntity):
         headers = {'Content-Type': 'application/json'}
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post(self._device_id, json=data, headers=headers) as response:
+                async with session.post("http://" + self._homeassistant_host + ":8000/api/devices/" + self._device_id, json=data, headers=headers) as response:
                     response.raise_for_status()
             except aiohttp.ClientError as e:
                 _LOGGER.error(f"Failed to set swing mode: {e}")
@@ -201,11 +204,9 @@ class ConnectLifeClimate(ClimateEntity):
 
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.get(self._api_url) as response:
+                async with session.get("http://" + self._homeassistant_host + ":8000/api/devices/" + self._puid) as response:
                     response.raise_for_status()
                     data = await response.json()
-
-                    _LOGGER.debug(f"API response: {data}")
 
                     if isinstance(data, list):
                         if len(data) > 0 and isinstance(data[0], str):
