@@ -64,6 +64,9 @@ class ConnectLifeClimate(ClimateEntity):
             SWING_OFF,
             SWING_ON
         ]
+    @property
+    def target_temperature_step(self):
+        return 1.0
 
     @property
     def name(self):
@@ -201,6 +204,8 @@ class ConnectLifeClimate(ClimateEntity):
                 async with session.get(self._api_url) as response:
                     response.raise_for_status()
                     data = await response.json()
+
+                    _LOGGER.debug(f"API response: {data}")
 
                     if isinstance(data, list):
                         if len(data) > 0 and isinstance(data[0], str):
