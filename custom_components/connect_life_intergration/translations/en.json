@@ -1,10 +1,17 @@
 {
-  "title": "Hisense Climate",
   "config": {
     "step": {
       "user": {
-        "title": "Setup Hisense Climate",
-        "description": "Set up your Hisense Climate integration."
+        "data": {
+          "api_url": "API URL",
+          "device_id": "Device ID"
+        }
+      },
+      "init": {
+        "data": {
+          "api_url": "API URL",
+          "device_id": "Device ID"
+        }
       }
     }
   }

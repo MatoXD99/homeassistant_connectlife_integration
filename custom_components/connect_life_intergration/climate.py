@@ -29,12 +29,11 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     api_url = config_entry.data["api_url"]
     device_id = config_entry.data["device_id"]
-    climate_entity = MyClimate()
+    climate_entity = ConnectLifeClimate(api_url, device_id)
     async_add_entities([climate_entity])
     async_track_time_interval(hass, climate_entity.async_update, datetime.timedelta(minutes=1))
 
-class MyClimate(ClimateEntity):
-
+class ConnectLifeClimate(ClimateEntity):
     def __init__(self):
         self._recently_updated = False
         self._name = "Hisense Climate"
