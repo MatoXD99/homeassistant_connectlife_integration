@@ -33,7 +33,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities, discovery_in
     device_id = config_entry.data.get("device_id")
     climate_entity = ConnectLifeClimate(api_url, device_id)
     async_add_entities([climate_entity])
-    async_track_time_interval(hass, climate_entity.async_update, datetime.timedelta(seconds=5))
+    async_track_time_interval(hass, climate_entity.async_update, datetime.timedelta(seconds=10))
 
 class ConnectLifeClimate(ClimateEntity):
     def __init__(self, api_url, device_id):
@@ -119,7 +119,7 @@ class ConnectLifeClimate(ClimateEntity):
         data = {"t_temp": temperature}
         headers = {'Content-Type': 'application/json'}
         try:
-            response = requests.post(self._api_url, json=data, headers=headers)
+            response = requests.post(self._device_id, json=data, headers=headers)
             response.raise_for_status()
         except requests.RequestException as e:
             _LOGGER.error(f"Failed to set temperature: {e}")
@@ -142,7 +142,7 @@ class ConnectLifeClimate(ClimateEntity):
         headers = {'Content-Type': 'application/json'}
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post(self._api_url, json=data, headers=headers) as response:
+                async with session.post(self._device_id, json=data, headers=headers) as response:
                     response.raise_for_status()
             except aiohttp.ClientError as e:
                 _LOGGER.error(f"Failed to set HVAC mode: {e}")
@@ -166,7 +166,7 @@ class ConnectLifeClimate(ClimateEntity):
         headers = {'Content-Type': 'application/json'}
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post(self._api_url, json=data, headers=headers) as response:
+                async with session.post(self._device_id, json=data, headers=headers) as response:
                     response.raise_for_status()
             except aiohttp.ClientError as e:
                 _LOGGER.error(f"Failed to set fan mode: {e}")
@@ -186,7 +186,7 @@ class ConnectLifeClimate(ClimateEntity):
         headers = {'Content-Type': 'application/json'}
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post(self._api_url, json=data, headers=headers) as response:
+                async with session.post(self._device_id, json=data, headers=headers) as response:
                     response.raise_for_status()
             except aiohttp.ClientError as e:
                 _LOGGER.error(f"Failed to set swing mode: {e}")
@@ -201,8 +201,6 @@ class ConnectLifeClimate(ClimateEntity):
                 async with session.get(self._api_url) as response:
                     response.raise_for_status()
                     data = await response.json()
-
-                    _LOGGER.debug(f"API response: {data}")
 
                     if isinstance(data, list):
                         if len(data) > 0 and isinstance(data[0], str):
