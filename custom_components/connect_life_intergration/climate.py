@@ -202,6 +202,8 @@ class ConnectLifeClimate(ClimateEntity):
                     response.raise_for_status()
                     data = await response.json()
 
+                    _LOGGER.debug(f"API response: {data}")
+
                     if isinstance(data, list):
                         if len(data) > 0 and isinstance(data[0], str):
                             data = json.loads(data[0])
