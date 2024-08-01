@@ -3,8 +3,8 @@
     "step": {
       "user": {
         "data": {
-          "puid": "GET API URL",
-          "device_id": "POST API URL",
+          "puid": "Climate PuID",
+          "device_id": "Device ID",
           "update_frequency": "Update frequency (seconds)",
           "homeassistant_host": "HomeAssistant IP or FQDN"
         }

@@ -13,7 +13,7 @@ class ConnectLifeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_create_entry(title="ConnectLife", data=user_input)
 
         data_schema = vol.Schema({
-            vol.Required("api_url"): str,
+            vol.Required("puid"): str,
             vol.Required("device_id"): str,
             vol.Required("update_frequency"): vol.Coerce(int),
             vol.Required("homeassistant_host"): str
