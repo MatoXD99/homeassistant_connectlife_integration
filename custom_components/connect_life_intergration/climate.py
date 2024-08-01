@@ -27,15 +27,15 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
-    api_url = config["api_url"]
-    device_id = config["device_id"]
+async def async_setup_entry(hass, config, async_add_entities, discovery_info=None):
+    api_url = config.get("api_url")
+    device_id = config.get("device_id")
     climate_entity = ConnectLifeClimate(api_url, device_id)
     async_add_entities([climate_entity])
     async_track_time_interval(hass, climate_entity.async_update, datetime.timedelta(minutes=1))
 
 class ConnectLifeClimate(ClimateEntity):
-    def __init__(self):
+    def __init__(self, api_url, device_id):
         self._recently_updated = False
         self._name = "ConnectLife Climate"
         self._temperature = 26.0
