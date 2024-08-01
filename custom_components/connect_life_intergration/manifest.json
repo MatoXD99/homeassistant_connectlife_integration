@@ -1,12 +1,14 @@
 {
   "domain": "connectlife_homeassistant_integration",
-  "name": "ConnectLife",
-  "version": "1.0.0",
-  "documentation": "https://github.com/MatoXD99/homeassistant_connectlife_integration",
+  "name": "ConnectLife HomeAssistant Integration",
+  "version": "1.0.1",
   "requirements": [],
   "dependencies": [],
   "codeowners": [
     "@MatoXD99"
   ],
-  "config_flow": true
+  "iot_class": "cloud_polling",
+  "config_flow": true,
+  "documentation": "https://github.com/MatoXD99/homeassistant_connectlife_integration",
+  "issue_tracker": "https://github.com/MatoXD99/homeassistant_connectlife_integration/issues"
 }

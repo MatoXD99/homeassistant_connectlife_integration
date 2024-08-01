@@ -26,10 +26,11 @@ from homeassistant.helpers.event import async_track_time_interval
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
+DOMAIN = "connectlife_homeassistant_integration"
 
-async def async_setup_entry(hass, config, async_add_entities, discovery_info=None):
-    api_url = config.get("api_url")
-    device_id = config.get("device_id")
+async def async_setup_entry(hass, config_entry, async_add_entities, discovery_info=None):
+    api_url = config_entry.data.get("api_url")
+    device_id = config_entry.data.get("device_id")
     climate_entity = ConnectLifeClimate(api_url, device_id)
     async_add_entities([climate_entity])
     async_track_time_interval(hass, climate_entity.async_update, datetime.timedelta(minutes=1))
