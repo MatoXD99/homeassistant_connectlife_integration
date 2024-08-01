@@ -33,7 +33,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities, discovery_in
     device_id = config_entry.data.get("device_id")
     climate_entity = ConnectLifeClimate(api_url, device_id)
     async_add_entities([climate_entity])
-    async_track_time_interval(hass, climate_entity.async_update, datetime.timedelta(minutes=1))
+    async_track_time_interval(hass, climate_entity.async_update, datetime.timedelta(seconds=5))
 
 class ConnectLifeClimate(ClimateEntity):
     def __init__(self, api_url, device_id):
@@ -198,7 +198,7 @@ class ConnectLifeClimate(ClimateEntity):
 
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.get(self._get_api_url) as response:
+                async with session.get(self._api_url) as response:
                     response.raise_for_status()
                     data = await response.json()
 
