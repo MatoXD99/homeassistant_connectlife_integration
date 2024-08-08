@@ -136,8 +136,6 @@ class ConnectLifeClimate(ClimateEntity):
 
     async def async_set_hvac_mode(self, hvac_mode):
         self._hvac_mode = hvac_mode
-        self._recently_updated = True
-        self.async_write_ha_state()
 
         if hvac_mode == HVAC_MODE_OFF:
             data = {"t_power": 0}
@@ -158,6 +156,8 @@ class ConnectLifeClimate(ClimateEntity):
             try:
                 async with session.post("http://" + self._homeassistant_host + ":" + self._port + "/api/devices/" + self._device_id, json=data, headers=headers) as response:
                     response.raise_for_status()
+                    self._recently_updated = True
+                    self.async_write_ha_state()
             except aiohttp.ClientError as e:
                 _LOGGER.error(f"Failed to set HVAC mode: {e}")
 
@@ -209,6 +209,11 @@ class ConnectLifeClimate(ClimateEntity):
         if self._recently_updated:
             self._recently_updated = False
             return
+
+        _LOGGER.debug("puid: " + self._puid)
+        _LOGGER.debug("deviceId: " + self._device_id)
+        _LOGGER.debug("Host: " + self._homeassistant_host)
+        _LOGGER.debug("Port: " + self._port)
 
         async with aiohttp.ClientSession() as session:
             try:
