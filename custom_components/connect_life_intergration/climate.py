@@ -157,8 +157,7 @@ class ConnectLifeClimate(ClimateEntity):
             try:
                 async with session.post("http://" + self._homeassistant_host + ":" + self._port + "/api/devices/" + self._device_id, json=data, headers=headers) as response:
                     response.raise_for_status()
-                    await asyncio.sleep(1)  # Add a 1-second delay before updating the state
-                    self._recently_updated = True
+                    await self.async_update()  # Fetch the latest state immediately
                     self.async_write_ha_state()
             except aiohttp.ClientError as e:
                 _LOGGER.error(f"Failed to set HVAC mode: {e}")
