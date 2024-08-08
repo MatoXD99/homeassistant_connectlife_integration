@@ -159,7 +159,6 @@ class ConnectLifeClimate(ClimateEntity):
                     response.raise_for_status()
                     self._recently_updated = True
                     self.async_write_ha_state()
-                    await self.async_update()  # Fetch the latest state immediately
             except aiohttp.ClientError as e:
                 _LOGGER.error(f"Failed to set HVAC mode: {e}")
 
