@@ -10,6 +10,7 @@ from homeassistant.components.climate.const import (
     HVAC_MODE_AUTO,
     HVAC_MODE_DRY,
     HVAC_MODE_FAN_ONLY,
+    HVAC_MODE_OFF,
     SUPPORT_TARGET_TEMPERATURE,
     SUPPORT_FAN_MODE,
     SUPPORT_SWING_MODE,
@@ -56,7 +57,8 @@ class ConnectLifeClimate(ClimateEntity):
             HVAC_MODE_HEAT,
             HVAC_MODE_COOL,
             HVAC_MODE_DRY,
-            HVAC_MODE_FAN_ONLY
+            HVAC_MODE_FAN_ONLY,
+            HVAC_MODE_OFF
         ]
         self._attr_fan_modes = [
             FAN_AUTO,
@@ -137,16 +139,20 @@ class ConnectLifeClimate(ClimateEntity):
         self._recently_updated = True
         self.async_write_ha_state()
 
-        mode_mapping = {
-            HVAC_MODE_FAN_ONLY: 0,
-            HVAC_MODE_HEAT: 1,
-            HVAC_MODE_COOL: 2,
-            HVAC_MODE_DRY: 3,
-            HVAC_MODE_AUTO: 4
-        }
+        if hvac_mode == HVAC_MODE_OFF:
+            data = {"t_power": 0}
+        else:
+            data = {"t_power": 1}
+            mode_mapping = {
+                HVAC_MODE_FAN_ONLY: 0,
+                HVAC_MODE_HEAT: 1,
+                HVAC_MODE_COOL: 2,
+                HVAC_MODE_DRY: 3,
+                HVAC_MODE_AUTO: 4
+            }
+            mode = mode_mapping.get(hvac_mode, 1)
+            data["t_work_mode"] = mode
 
-        mode = mode_mapping.get(hvac_mode, 1)
-        data = {"t_work_mode": mode}
         headers = {'Content-Type': 'application/json'}
         async with aiohttp.ClientSession() as session:
             try:
