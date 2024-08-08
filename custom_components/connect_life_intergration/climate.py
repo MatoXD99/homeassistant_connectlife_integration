@@ -3,6 +3,7 @@ import requests
 import aiohttp
 import json
 import datetime
+import asyncio
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (
     HVAC_MODE_HEAT,
