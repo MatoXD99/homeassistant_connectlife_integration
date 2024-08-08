@@ -156,6 +156,7 @@ class ConnectLifeClimate(ClimateEntity):
             try:
                 async with session.post("http://" + self._homeassistant_host + ":" + self._port + "/api/devices/" + self._device_id, json=data, headers=headers) as response:
                     response.raise_for_status()
+                    await asyncio.sleep(1)  # Add a 1-second delay before updating the state
                     self._recently_updated = True
                     self.async_write_ha_state()
             except aiohttp.ClientError as e:
@@ -206,10 +207,6 @@ class ConnectLifeClimate(ClimateEntity):
                 _LOGGER.error(f"Failed to set swing mode: {e}")
 
     async def async_update(self, now=None):
-        if self._recently_updated:
-            self._recently_updated = False
-            return
-
         _LOGGER.debug("puid: " + self._puid)
         _LOGGER.debug("deviceId: " + self._device_id)
         _LOGGER.debug("Host: " + self._homeassistant_host)
