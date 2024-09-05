@@ -42,11 +42,14 @@ async def async_setup_entry(hass, config_entry, async_add_entities, discovery_in
 
 class ConnectLifeClimate(ClimateEntity):
     def __init__(self, puid, device_id, homeassistant_host, port):
-        self._recently_updated = False
+        self._last_update_time = None       # Track time for HVAC mode updates
+        self._last_temp_update_time = None  # Track time for temperature updates
+        self._last_fan_update_time = None   # Track time for fan speed updates
+        self._last_swing_update_time = None # Track time for swing mode updates
         self._name = "ConnectLife Climate"
         self._temperature = 26.0
         self._target_temperature = 23.0
-        self._hvac_mode = HVAC_MODE_COOL
+        self._hvac_mode = HVAC_MODE_OFF
         self._fan_mode = "auto"
         self._swing_mode = "off"
         self._puid = puid
@@ -120,7 +123,7 @@ class ConnectLifeClimate(ClimateEntity):
         temperature = kwargs.get(ATTR_TEMPERATURE)
         if temperature is not None and self.min_temp <= temperature <= self.max_temp:
             self._target_temperature = temperature
-            self._recently_updated = True
+            self._last_temp_update_time = datetime.datetime.now()  # Track the time
             self.schedule_update_ha_state()
             self._send_temperature_to_api(temperature)
         else:
@@ -137,6 +140,8 @@ class ConnectLifeClimate(ClimateEntity):
 
     async def async_set_hvac_mode(self, hvac_mode):
         self._hvac_mode = hvac_mode
+        self._last_update_time = datetime.datetime.now()  # Track the time of this change
+        self.async_write_ha_state()
 
         if hvac_mode == HVAC_MODE_OFF:
             data = {"t_power": 0}
@@ -157,85 +162,89 @@ class ConnectLifeClimate(ClimateEntity):
             try:
                 async with session.post(f"http://{self._homeassistant_host}:{self._port}/api/devices/{self._device_id}", json=data, headers=headers) as response:
                     response.raise_for_status()
-                    self._recently_updated = True
-                    self.async_write_ha_state()
             except aiohttp.ClientError as e:
                 _LOGGER.error(f"Failed to set HVAC mode: {e}")
 
     async def async_set_fan_mode(self, fan_mode):
         self._fan_mode = fan_mode
-        self._recently_updated = True
+        self._last_fan_update_time = datetime.datetime.now()  # Track the time
         self.async_write_ha_state()
-
+    
         fan_mode_mapping = {
             FAN_AUTO: 0,
             FAN_LOW: 5,
             FAN_MEDIUM: 6,
             FAN_MIDDLE: 7,
             FAN_HIGH: 8,
-            FAN_HIGH: 9
         }
-
+    
         fan_speed = fan_mode_mapping.get(fan_mode, 0)
         data = {"t_fan_speed": fan_speed}
         headers = {'Content-Type': 'application/json'}
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post("http://" + self._homeassistant_host + ":" + self._port + "/api/devices/" + self._device_id, json=data, headers=headers) as response:
+                async with session.post(f"http://{self._homeassistant_host}:{self._port}/api/devices/{self._device_id}", json=data, headers=headers) as response:
                     response.raise_for_status()
             except aiohttp.ClientError as e:
                 _LOGGER.error(f"Failed to set fan mode: {e}")
 
     async def async_set_swing_mode(self, swing_mode):
         self._swing_mode = swing_mode
-        self._recently_updated = True
+        self._last_swing_update_time = datetime.datetime.now()  # Track the time
         self.async_write_ha_state()
-
+    
         swing_mode_mapping = {
             SWING_OFF: 0,
             SWING_ON: 1
         }
-
+    
         swing_direction = swing_mode_mapping.get(swing_mode, 4)
         data = {"t_up_down": swing_direction}
         headers = {'Content-Type': 'application/json'}
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post("http://" + self._homeassistant_host + ":" + self._port + "/api/devices/" + self._device_id, json=data, headers=headers) as response:
+                async with session.post(f"http://{self._homeassistant_host}:{self._port}/api/devices/{self._device_id}", json=data, headers=headers) as response:
                     response.raise_for_status()
             except aiohttp.ClientError as e:
                 _LOGGER.error(f"Failed to set swing mode: {e}")
 
     async def async_update(self, now=None):
-        _LOGGER.debug("puid: " + self._puid)
-        _LOGGER.debug("deviceId: " + self._device_id)
-        _LOGGER.debug("Host: " + self._homeassistant_host)
-        _LOGGER.debug("Port: " + self._port)
-
+        # Check if the last temperature update was less than 5 seconds ago
+        if self._last_temp_update_time and (datetime.datetime.now() - self._last_temp_update_time).total_seconds() < 5:
+            _LOGGER.debug("Skipping API update for temperature due to recent change")
+            return  # Skip temperature update cycle
+    
+        # Check if the last fan mode update was less than 5 seconds ago
+        if self._last_fan_update_time and (datetime.datetime.now() - self._last_fan_update_time).total_seconds() < 5:
+            _LOGGER.debug("Skipping API update for fan mode due to recent change")
+            return  # Skip fan mode update cycle
+    
+        # Check if the last swing mode update was less than 5 seconds ago
+        if self._last_swing_update_time and (datetime.datetime.now() - self._last_swing_update_time).total_seconds() < 5:
+            _LOGGER.debug("Skipping API update for swing mode due to recent change")
+            return  # Skip swing mode update cycle
+    
+        # Proceed with fetching data from the API as usual
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.get(f"http://{self._homeassistant_host}:{self._port}/api/devices/{self._puid}") as response:
                     response.raise_for_status()
                     data = await response.json()
-
-                    if isinstance(data, list):
-                        if len(data) > 0 and isinstance(data[0], str):
-                            data = json.loads(data[0])
-                        else:
-                            _LOGGER.error("Expected a string inside the list from API")
-                            return
-                    elif isinstance(data, str):
-                        data = json.loads(data)
-
+    
                     status_list = data.get("statusList", {})
-
+    
+                    # Extract and update temperature
                     self._temperature = float(status_list.get("f_temp_in", self._temperature))
                     self._target_temperature = float(status_list.get("t_temp", self._target_temperature))
-                    self._hvac_mode = self._map_hvac_mode(status_list.get("t_work_mode", str(self._hvac_mode)))
+    
+                    # Extract and update fan mode
                     self._fan_mode = self._map_fan_mode(status_list.get("t_fan_speed", self._fan_mode))
+    
+                    # Extract and update swing mode
                     self._swing_mode = self._map_swing_mode(status_list.get("t_up_down", self._swing_mode))
-
+    
                     self.async_write_ha_state()
+    
             except aiohttp.ClientError as e:
                 _LOGGER.error(f"Failed to fetch data from API: {e}")
             except json.JSONDecodeError as e:
