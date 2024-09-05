@@ -42,6 +42,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities, discovery_in
 
 class ConnectLifeClimate(ClimateEntity):
     def __init__(self, puid, device_id, homeassistant_host, port):
+        self._name = "ConnectLife Climate"
+        self._unique_id = f"{puid}_{device_id}"  # Set a unique ID based on PUID and device_id
         self._last_update_time = None       # Track time for HVAC mode updates
         self._last_temp_update_time = None  # Track time for temperature updates
         self._last_fan_update_time = None   # Track time for fan speed updates
@@ -75,6 +77,12 @@ class ConnectLifeClimate(ClimateEntity):
             SWING_OFF,
             SWING_ON
         ]
+        
+    @property
+    def unique_id(self):
+        """Return a unique ID for this entity."""
+        return self._unique_id
+        
     @property
     def target_temperature_step(self):
         return 1.0
