@@ -1,7 +1,7 @@
 {
   "domain": "connectlife_homeassistant_integration",
   "name": "ConnectLife HomeAssistant Integration",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "requirements": [],
   "dependencies": [],
   "codeowners": [
