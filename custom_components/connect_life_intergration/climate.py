@@ -218,17 +218,22 @@ class ConnectLifeClimate(ClimateEntity):
 
     async def async_update(self, now=None):
         # Check if the last temperature update was less than 5 seconds ago
-        if self._last_temp_update_time and (datetime.datetime.now() - self._last_temp_update_time).total_seconds() < 5:
+        if self._last_temp_update_time and (datetime.datetime.now() - self._last_temp_update_time).total_seconds() < 2:
+            _LOGGER.debug("Skipping API update for temperature due to recent change")
+            return  # Skip temperature update cycle
+        
+        # Check if the last HVAC update was less than 5 seconds ago
+        if self._last_update_time and (datetime.datetime.now() - self._last_update_time).total_seconds() < 2:
             _LOGGER.debug("Skipping API update for temperature due to recent change")
             return  # Skip temperature update cycle
     
         # Check if the last fan mode update was less than 5 seconds ago
-        if self._last_fan_update_time and (datetime.datetime.now() - self._last_fan_update_time).total_seconds() < 5:
+        if self._last_fan_update_time and (datetime.datetime.now() - self._last_fan_update_time).total_seconds() < 2:
             _LOGGER.debug("Skipping API update for fan mode due to recent change")
             return  # Skip fan mode update cycle
     
         # Check if the last swing mode update was less than 5 seconds ago
-        if self._last_swing_update_time and (datetime.datetime.now() - self._last_swing_update_time).total_seconds() < 5:
+        if self._last_swing_update_time and (datetime.datetime.now() - self._last_swing_update_time).total_seconds() < 2:
             _LOGGER.debug("Skipping API update for swing mode due to recent change")
             return  # Skip swing mode update cycle
     
@@ -244,7 +249,14 @@ class ConnectLifeClimate(ClimateEntity):
                     # Extract and update temperature
                     self._temperature = float(status_list.get("f_temp_in", self._temperature))
                     self._target_temperature = float(status_list.get("t_temp", self._target_temperature))
-    
+                    
+                    # HVAC mode
+                    t_power = int(status_list.get("t_power", 1))
+                    if t_power == 0:
+                        self._hvac_mode = HVAC_MODE_OFF
+                    else:
+                        self._hvac_mode = self._map_hvac_mode(status_list.get("t_work_mode", str(self._hvac_mode)))
+                    
                     # Extract and update fan mode
                     self._fan_mode = self._map_fan_mode(status_list.get("t_fan_speed", self._fan_mode))
     
